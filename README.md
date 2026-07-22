@@ -4,7 +4,7 @@ AI-readable setup guides for smart devices — a manual for the age of AI assist
 
 <img src="altruist/altruist-guide-qr.png" width="300" alt="QR code — Altruist AI assistant guide">
 
-**Scan and send the link to your AI assistant** (ChatGPT, Claude, Gemini, ...) — it becomes your personal [Altruist](altruist/) setup guide.
+**Photograph this QR code straight into a chat with your AI assistant** (ChatGPT, Claude, Gemini, ...) — or scan it and paste the decoded text. The QR encodes a ready-made request plus a link to the [Altruist](altruist/) guide, so the assistant immediately knows you want setup help.
 
 ## The idea
 

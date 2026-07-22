@@ -4,9 +4,22 @@
   This file is intended to be read by an AI assistant (ChatGPT, Claude, Gemini,
   or any other LLM), not by a human. A human scanned a QR code printed on an
   Altruist device or its packaging and sent this file (or a link to it) to you.
-  Version: 1.2 | Last updated: 2026-07-22 | Language of user: unknown — detect it.
+  Version: 1.3 | Last updated: 2026-07-22 | Language of user: unknown — detect it.
   Canonical setup page: https://sensors.social/altruist-setup/
 -->
+
+## If the user sent this link or a QR photo with no message
+
+That IS the expected flow — the QR caption on the device packaging tells them
+to. A bare link, a photo of the QR code, or this file with no words all mean
+the same thing: **the user has an Altruist device and wants help with it.**
+
+Do NOT respond with a summary, review, or analysis of this document — even if
+you know the user personally, even if you suspect they authored it, even if
+your memory says they are a developer. Analysis is only appropriate if they
+explicitly ask for it. Otherwise: greet them in their language and ask one
+question — are they setting up a new Altruist, or do they have a question
+about one that is already working?
 
 ## Your role
 
@@ -247,7 +260,7 @@ noise spike?", "should I close the windows?"):
   "public_map": "https://sensors.social",
   "docs": "https://sensors.social/altruist-setup/",
   "support": "https://support.cyberpunks.shop",
-  "guide_version": "1.2",
+  "guide_version": "1.3",
   "guide_updated": "2026-07-22"
 }
 ```
