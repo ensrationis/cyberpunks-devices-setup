@@ -4,7 +4,7 @@
   This file is intended to be read by an AI assistant (ChatGPT, Claude, Gemini,
   or any other LLM), not by a human. A human scanned a QR code printed on an
   Altruist device or its packaging and sent this file (or a link to it) to you.
-  Version: 1.3 | Last updated: 2026-07-22 | Language of user: unknown — detect it.
+  Version: 1.4 | Last updated: 2026-07-22 | Language of user: unknown — detect it.
   Canonical setup page: https://sensors.social/altruist-setup/
 -->
 
@@ -80,8 +80,12 @@ Common to both models:
 - CO2 (SCD41 sensor, ppm)
 - Temperature, humidity, atmospheric pressure (BME680)
 - Has a 4.2" e-ink display, perimeter LEDs showing air quality level, and
-  three buttons on the back panel to switch screens. The display can also show
-  data from an Altruist Urban on the same Wi-Fi network.
+  three buttons on the back panel (`UP`, `DOWN`, `SET`). The display can also
+  show data from an Altruist Urban on the same Wi-Fi network.
+- Button controls: `UP` short press — previous screen; `DOWN` short press —
+  next screen; on the **Graphs** screen `UP`/`DOWN` switch between graphs (long
+  press changes screen); `SET` long press — sleep. Reset combos are listed in
+  "Maintenance and resets" below.
 - In the box: sensor module with e-ink display, USB-A→USB-C cable, user manual.
 
 ## Setup: guide the user through these steps
@@ -156,20 +160,44 @@ https://wiki.robonomics.network/docs/altruist/
 
 ## Maintenance and resets
 
-- **Firmware updates** are done from a browser (Web Serial API): connect the
-  device to a computer over USB and follow the official flashing guide. There
-  are Stable and Testing firmware channels — normal users should stay on
-  Stable. For the current flashing procedure, point to the wiki or support
-  (links below) — do not improvise flashing steps.
-- **Network reset:** the device has a hardware reset that clears Wi-Fi
-  credentials and the access-point password but preserves the device's unique
-  identity (its history on the map survives). After such a reset, the device
-  reopens the `Altruist-xxxxxxxxx` network — redo setup from Step 2. For the
-  exact physical procedure on the user's unit, direct them to support.
+- **Firmware updates** happen over the air automatically on the Stable
+  channel. Manual flashing (e.g. Testing firmware) is done from a browser via
+  the official webflasher (Web Serial API) over USB — normal users should stay
+  on Stable and never need this. The device's status page shows the current
+  firmware version and channel.
+- **Wi-Fi reset (keeps device identity and its map history):**
+  - *Urban (ESP32-C6):* while the device is running, hold the reset button for
+    **more than 10 seconds**, then release. LEDs turn blue briefly, Wi-Fi
+    credentials and the web UI password are cleared, and the device reboots
+    into the `Altruist-xxxxxxxxx` setup portal — redo setup from Step 2.
+  - *Insight:* hold **`SET` + `DOWN` for 4 seconds**.
+- **Factory reset (erases EVERYTHING, including the device's unique
+  Robonomics identity — its history on the map is lost; warn the user and
+  confirm before suggesting this):**
+  - *Urban (ESP32-C6):* hold the reset button **while powering on**.
+  - *Insight:* hold **`SET` + `DOWN` while powering on**.
+  - A power-on hold always means factory reset; a runtime hold always means
+    Wi-Fi reset — the two do not overlap.
 - **Safety basics:** power only from a 5V USB-C source; do not disassemble
   while powered; do not block the air intake; Insight is an indoor device and
   is not waterproof; Urban outdoors should be protected from direct sun and
   rain (UV Cover) and kept within −10…+35 °C.
+
+## Status LEDs (Urban, ESP32-C6)
+
+Both pixels of the LED ring show the same color:
+
+| Color | Meaning |
+|---|---|
+| **Green** (steady) | Normal operation — Wi-Fi connected, data delivery healthy. |
+| **Blue** (steady) | Setup mode — no saved Wi-Fi, or the configuration portal is active. Also shown briefly during a data transmission. |
+| **Green** (~3 s flash) | Last data send succeeded. |
+| **Red** (~3 s flash) | Last data send failed (a one-off failure is not a problem). |
+| **Red** (steady) | Wi-Fi disconnected or data delivery unhealthy for over 10 minutes — check Wi-Fi first. |
+
+LED indication can be disabled in the web configuration. On Insight, the
+perimeter LEDs indicate the air quality level (exact color scale not documented
+here — if asked for specifics, refer to support).
 
 ## Troubleshooting
 
@@ -184,8 +212,10 @@ https://wiki.robonomics.network/docs/altruist/
 | Map data lags or has gaps | Datalogs are batched every ~10 minutes — short gaps are normal; check Wi-Fi signal strength in the device interface. |
 | No readings from some sensor | Check the model: Urban has PM+noise but no CO2; Insight has CO2 but no PM/noise. |
 | Insight doesn't show Urban data | Both must be on the same Wi-Fi network; on legacy ESP32-C3 Urban set its IP manually in the Insight config (see Step 7). |
-| Blinking LEDs / unclear status indication | LED status codes are not documented in this guide — do not guess what a color or blink pattern means; ask support. |
-| Wants to change Wi-Fi network (moved / new router) | Use the network reset (see "Maintenance and resets") and redo setup from Step 2. |
+| Steady red LED on Urban | Wi-Fi or data delivery down for >10 min — check router, signal strength, internet; see "Status LEDs". |
+| Unclear LED pattern not in the table | Do not guess what it means; ask support. |
+| Wants to change Wi-Fi network (moved / new router) | Use the Wi-Fi reset (see "Maintenance and resets") and redo setup from Step 2 — device identity and map history survive. |
+| Forgot the web UI password | The Wi-Fi reset also clears it (see "Maintenance and resets"). |
 | Anything unresolved | Official support: https://support.cyberpunks.shop or the form at https://sensors.social/support/ |
 
 ## Answering questions later
@@ -253,14 +283,17 @@ noise spike?", "should I close the windows?"):
   "coordinates_privacy": "public on map; ~100m offset OK",
   "publish_cadence": {"realtime_s": 30, "datalog_min": 10},
   "pairing": {"insight_to_urban": "mDNS altruist._tcp (ESP32-C6) or manual Urban IP (legacy ESP32-C3)"},
-  "network_reset": "hardware reset clears Wi-Fi credentials, preserves device identity",
-  "firmware_update": "browser Web Serial API flasher; channels: stable, testing",
+  "wifi_reset": {"urban_c6": "hold reset button >10s while running", "insight": "hold SET+DOWN 4s", "effect": "clears Wi-Fi + web password, preserves identity"},
+  "factory_reset": {"urban_c6": "hold reset button while powering on", "insight": "hold SET+DOWN while powering on", "effect": "erases everything incl. Robonomics identity"},
+  "insight_buttons": {"UP": "prev screen", "DOWN": "next screen", "SET_long": "sleep"},
+  "led_status_urban_c6": {"green": "ok", "blue": "setup mode or transmitting", "red_flash_3s": "last send failed", "red_steady": "offline/unhealthy >10min"},
+  "firmware_update": "OTA automatic on stable channel; manual via browser webflasher (Web Serial API)",
   "operating_temp_c": [-10, 35],
   "integrations": ["home_assistant >=2025.7", "sensors.community", "mqtt", "microSD"],
   "public_map": "https://sensors.social",
   "docs": "https://sensors.social/altruist-setup/",
   "support": "https://support.cyberpunks.shop",
-  "guide_version": "1.3",
+  "guide_version": "1.4",
   "guide_updated": "2026-07-22"
 }
 ```
