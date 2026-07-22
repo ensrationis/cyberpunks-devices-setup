@@ -2,6 +2,10 @@
 
 AI-readable setup guides for smart devices — a manual for the age of AI assistants.
 
+<img src="altruist/altruist-guide-qr.png" width="300" alt="QR code — Altruist AI assistant guide">
+
+**Scan and send the link to your AI assistant** (ChatGPT, Claude, Gemini, ...) — it becomes your personal [Altruist](altruist/) setup guide.
+
 ## The idea
 
 Instead of a paper manual, a device ships with a **QR code**. The user scans it
