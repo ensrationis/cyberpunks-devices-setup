@@ -1,0 +1,15 @@
+{
+  "name": "cyberpunks-devices-setup",
+  "private": true,
+  "description": "Tooling for generating and verifying the device QR codes",
+  "type": "module",
+  "scripts": {
+    "qr": "node tools/generate-qr.mjs",
+    "qr:verify": "node tools/verify-qr.mjs altruist/altruist-guide-qr.png"
+  },
+  "dependencies": {
+    "jsqr": "^1.4.0",
+    "pngjs": "^7.0.0",
+    "qrcode": "^1.5.4"
+  }
+}

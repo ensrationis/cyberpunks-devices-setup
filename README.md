@@ -4,7 +4,12 @@ AI-readable setup guides for smart devices — a manual for the age of AI assist
 
 <img src="altruist/altruist-guide-qr.png" width="300" alt="QR code — Altruist AI assistant guide">
 
-**Photograph this QR code straight into a chat with your AI assistant** (ChatGPT, Claude, Gemini, ...) — or scan it and paste the decoded text. The QR encodes a ready-made request plus a link to the [Altruist](altruist/) guide, so the assistant immediately knows you want setup help.
+**Photograph this QR code straight into a chat with your AI assistant** (ChatGPT, Claude, Gemini, ...) — or scan it and paste the decoded text. The QR encodes a short request plus a link to the [Altruist](altruist/) guide, so the assistant immediately knows you want setup help:
+
+> Help me set up my Altruist: https://sensors.social/altruist-ai-guide.md
+
+The guide is served from the project's own domain, so printed codes keep working
+if the file moves. Regenerate the assets with `npm install && npm run qr`.
 
 ## The idea
 
@@ -23,8 +28,9 @@ about how the device works.
 
 ## How to use (for humans)
 
-Scan the QR code on your device, or open the raw link to the guide file, and
-send it to your AI assistant with a message like:
+Scan the QR code on your device, or open the guide at
+<https://sensors.social/altruist-ai-guide.md>, and send it to your AI assistant
+with a message like:
 
 > Help me set up this device.
 
