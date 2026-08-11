@@ -4,7 +4,7 @@
 any other LLM) — not an article for a human to read.
 **How it reached you:** a human scanned a QR code printed on an Altruist device
 or its packaging and sent you this file, or a link to it.
-**Version:** 1.6 · **updated:** 2026-08-11 · **canonical page:**
+**Version:** 1.7 · **updated:** 2026-08-11 · **canonical page:**
 https://sensors.social/altruist-setup/
 **User's language:** unknown — detect it from their message and reply in it.
 
@@ -87,6 +87,9 @@ A setup conversation is finished when all of this is true:
 
 - **Never ask for the user's home Wi-Fi password**, and tell them not to send it
   if they offer — they type it into the device's own page, you never need it.
+- **Never ask for a seed phrase, mnemonic, private key or backup file**, and
+  stop the user if they start pasting one. Anyone holding it owns their
+  Robonomics account and their data. You never need it to help them.
 - **Never invent** an LED colour, a menu item, a screen, a specification, or a
   procedure that is not in this file.
 - **Never suggest a factory reset** without first stating that it destroys the
@@ -114,6 +117,8 @@ Route the conversation from their first message:
 | Sends a photo of the device, an LED, or a screen | Section 7 — Working from photos |
 | Asks about Home Assistant, MQTT, local API | Section 10, Steps 6 and Advanced |
 | "Where does my data go", "how does the network work", "is this blockchain" | Section 15 — How the sensor network works |
+| Wants Testing firmware, a rollback, or has a device OTA cannot fix | Section 11 — Manual firmware flashing over USB-C |
+| Screens do not match this guide, or they mention Testing/dev firmware | Section 11 — "If the user is going to Testing firmware", then work from what they see |
 | Something this file does not cover | Section 6, then Section 16 — escalation |
 
 ## 6. What you do not know
@@ -128,8 +133,9 @@ https://sensors.social/support/. Do not reason your way to an answer.
 - **Legacy Urban (ESP32-C3):** whether it has status indication at all.
 - **Physical reset button on Urban:** where it is on the case and whether it is
   labelled.
-- **Manual firmware flashing:** the public URL of the webflasher, and how to put
-  a device into USB flashing mode.
+- **Manual firmware flashing** (the webflasher, what it keeps, and the Linux
+  port problems are all in Section 11): what remains undocumented is how to
+  force a device into USB flashing mode when the browser cannot see it at all.
 - **Insight e-ink screens:** the full list of screens and what each one shows;
   LED brightness or night-mode settings beyond switching indication off.
 - **Sensor service life and maintenance:** SDS011 lifetime and signs of
@@ -291,10 +297,9 @@ who do want their own setup to https://wiki.robonomics.network/docs/altruist/
 ## 11. Maintenance and resets
 
 - **Firmware updates** happen over the air automatically on the Stable
-  channel. Manual flashing (e.g. Testing firmware) is done from a browser via
-  the official webflasher (Web Serial API) over USB — normal users should stay
-  on Stable and never need this. The device's status page shows the current
-  firmware version and channel.
+  channel. Normal users never need to flash anything by hand. The device's
+  status page shows the current firmware version and channel. Manual flashing
+  over USB-C is described just below.
 - **Wi-Fi reset (keeps device identity and its map history):**
   - *Altruist Urban (ESP32-C6):* while the device is running, hold the reset
     button for **more than 10 seconds**, then release. LEDs turn blue briefly,
@@ -312,6 +317,139 @@ who do want their own setup to https://wiki.robonomics.network/docs/altruist/
   while powered; do not block the air intake; Insight is an indoor device and
   is not waterproof; Urban outdoors should be protected from direct sun and
   rain (UV Cover) and kept within −10…+35 °C.
+
+### Manual firmware flashing over USB-C (webflasher)
+
+**Check the reason first.** Updates arrive by OTA on their own, so there are
+only three legitimate reasons to flash by hand: the user wants **Testing**
+firmware, they want to go **back to Stable** after testing, or the device is
+broken enough that OTA cannot run. If it is none of those, say so and stop —
+flashing a working device gains nothing.
+
+**Requirements — check these before giving any steps:**
+
+- **A desktop computer with Chrome or Edge.** The flasher uses the Web Serial
+  API; the page itself refuses every other browser. **This cannot be done from
+  a phone** — if the user only has a phone, say that plainly instead of walking
+  them into a dead end.
+- The **USB-C cable** connected to that computer. It must be a data cable —
+  charge-only cables are a common failure here.
+- **Which model, and for Urban which chip:** Urban exists as **ESP32-C6**
+  (current) and **ESP32-C3** (legacy); Insight is ESP32-C6 only. The flasher
+  asks, and picking wrong gives them the wrong firmware.
+
+**Steps — one at a time, as always:**
+
+1. Open **https://webflasher.robonomics.network/** ("Robonomics ESP Installer")
+   on the computer.
+2. Choose **EN** or **RU** at the top. This picks the firmware language too:
+   EN shows the English builds, RU the Russian ones.
+3. **Select Firmware:** `Urban Stable`, `Urban Testing`, `Insight Stable` or
+   `Insight Testing`. The same list also offers *Energy Monitor* and
+   *Hikikomory* — those are other Robonomics devices, not Altruist.
+4. **Select chip:** ESP32-C6 or ESP32-C3 for Urban; ESP32-C6 for Insight.
+5. Plug the device into the computer over USB-C, click **Connect**, and pick
+   the device's serial port in the browser's dialog. The installer then shows
+   what is currently on the device, e.g.
+   `Altruist Altruist-Urban (R-URB_2026-06.1-testing+35859af)`.
+6. Choose **Install**. The next dialog offers an **"Erase device"** checkbox.
+   **Leave it unchecked.** Erasing wipes the whole config, including the
+   device's Robonomics identity and therefore its history on the map — treat
+   ticking it as a factory reset and get explicit confirmation first.
+7. Confirm the build in the "Confirm Installation" dialog, and wait. It claims
+   two minutes; in practice it is under a minute.
+8. When it says "Installation complete", the device reboots. Reconnecting in
+   the installer shows the new version.
+
+**Stable and Testing:**
+
+- OTA is pinned to Stable artifacts. A device flashed with **Testing firmware
+  does not get pulled back to Stable automatically** — that is deliberate.
+- To return to Stable: flash `... Stable` in the webflasher, or trigger the
+  manual `/ota` update, which is the documented rollback path to Stable.
+- Version names look like `R-URB_2026-06.1` (Urban) and `R-INS_2026-06.1`
+  (Insight); Testing builds carry a date and a commit. As of 2026-08-11 the
+  flasher served Stable `R-URB_2026-06.1` / `R-INS_2026-06.1` and Testing
+  `R-URB_2026-07-08` / `R-INS_2026-07-08` — **do not quote these as current**,
+  they move. Read the real version off the device's status page.
+
+**What flashing keeps.** Verified on 2026-08-11 on an Urban (ESP32-C6), by
+reading the device's own boot log after the update: with **"Erase device"
+unchecked**, the device mounts the filesystem, parses the existing config, and
+comes back with the **same Robonomics address, the same saved Wi-Fi credentials
+and the same settings** — the user does not have to redo setup. Ticking "Erase
+device" is the opposite: everything goes, identity included.
+
+**If the browser does not see the device at all**, the procedure for forcing it
+into USB flashing mode is not documented here — hand that to support
+(Section 16) rather than inventing a button combination. But on **Linux** check
+these two first, they are far more common and they look identical to a dead
+cable:
+
+- The user must have permission on the port. `/dev/ttyACM0` is usually
+  `root:dialout`, so their account has to be in the `dialout` group
+  (`sudo usermod -aG dialout $USER`, then log out and back in). A one-off
+  workaround until the cable is replugged is `sudo chmod a+rw /dev/ttyACM0`.
+- **ModemManager** probes any new `ttyACM` device as if it were a modem and
+  holds the port for the first seconds. `sudo systemctl stop ModemManager`
+  before flashing, or exclude Espressif devices permanently with a udev rule on
+  vendor id `303a` setting `ENV{ID_MM_DEVICE_IGNORE}="1"`.
+
+The symptom of both is the port appearing in the browser's list and then
+`Failed to execute 'open' on 'SerialPort'`.
+
+### If the user is going to Testing firmware
+
+Everything else in this file describes **Stable**. Testing is a genuinely
+different build, and a user on it will see screens this guide does not describe.
+
+**Say this before they flash — all four points:**
+
+1. Testing exists so that people find bugs in it. Things break, and screens
+   change without notice.
+2. Automatic OTA will **not** bring them back to Stable. Returning is a manual
+   act: flash Stable in the webflasher, or trigger `/ota`.
+3. If their firmware already has **System → Backup & restore**, take a backup
+   **before** flashing.
+4. From that point on, when what they see disagrees with this guide, **believe
+   the user, not the file.** Ask what is on their screen and work from that.
+   Never invent a screen you have not been told about.
+
+**What Testing changes as of 2026-08-11** (builds `R-URB_2026-07-08` /
+`R-INS_2026-07-08`). This list drifts — treat it as "what to expect", not as a
+specification:
+
+- **A new web interface**, laid out like a mobile app, with four areas:
+  **altruist.local** (readings and device settings), **sensors.social**
+  (everything map-related), **Custom** (Home Assistant, API, Influx, CSV) and
+  **System** (debug, restart, backup, delete config). Sidebar on a desktop,
+  bottom tabs on a phone. The first-time Wi-Fi captive portal means the same
+  thing but is split into steps 1 → 2 with a **Finish setup** button.
+  **Consequence for you:** the Section 10 wording ("Configuration" →
+  "GPS & Sensors") will not match. Navigate by these four areas instead, and
+  ask the user to read out what they see.
+- **Backup and restore** at System → Backup & restore: a full settings backup,
+  including the owner key if there is one; restoring replaces the config and
+  reboots the device. The same file can be used to log in on the map. Right
+  after a reset, while the device is still on its own guest Wi-Fi, restore is
+  reachable at `/guest-restore` before it joins the home network.
+- **Encrypted measurements.** Values can be encrypted for an owner
+  (`owner` / `rws_owner` in the config), so only the owner's key can read them
+  on the map. A standalone or group-master device encrypts to itself; a device
+  that joined a group encrypts to the master's address, so one key opens the
+  whole group. On the map, reading them means logging in with the owner's
+  mnemonic or importing an owner-access JSON or a device backup.
+  **The trap worth warning about:** with a manual or external owner, the
+  device's own backup will **not** decrypt the measurements — the backup holds
+  the device key, while the data is encrypted to the external owner, so that
+  owner's key is required. The backup still restores device settings.
+  Follow the rule in Section 4: never ask for the mnemonic itself.
+- **Each device has its own network name** — `altruist-urban-<id>` /
+  `altruist-insight-<id>`, editable in Configuration → Wi-Fi as **Local
+  Hostname**. `altruist.local` is not a reliable address: on a network with
+  more than one Altruist only the first can hold it, so ask the user what
+  their hostname field says instead of guessing.
+- A bug where the config was not saved after Wi-Fi setup is fixed.
 
 ## 12. Status LEDs (Altruist Urban, ESP32-C6)
 
@@ -333,11 +471,11 @@ not documented here, so refer the user to support if they ask for specifics.
 
 | Symptom | What to suggest |
 |---|---|
-| No `Altruist-...` Wi-Fi network appears | Check power (5V/1A) and cable; wait ~1 min after plugging in; power-cycle the device. |
+| No `Altruist-...` Wi-Fi network appears | Check power (5V/1A) and cable; wait ~1 min after plugging in; power-cycle the device. **If the device already has saved Wi-Fi credentials it will not open the setup portal at all** — even when it cannot join that network it just keeps retrying in the background (observed in the boot log: "Saved credentials but STA did not connect; skipping config AP"). To get the portal back, do the Wi-Fi reset in Section 11. |
 | Asks for a password to join the device's network | It is `123456789`. |
 | Setup page did not open | Open `http://192.168.4.1` manually in a browser while connected to the Altruist network. |
 | Device won't join home Wi-Fi | Almost always the 5 GHz issue — ensure a 2.4 GHz network; re-check password; move device closer to router. |
-| Lost the device's IP address | Check the router's client list, or restart the device and watch its status screen at `192.168.4.1`; `http://altruist.local` may also work on networks with mDNS. |
+| Lost the device's IP address | Check the router's client list, or restart the device and watch its status screen at `192.168.4.1`. `http://altruist.local` works only on networks with mDNS **and** only if no other Altruist has claimed that name — each device has its own **Local Hostname** (Configuration → Wi-Fi), e.g. `altruist-urban-0b50`, and with several devices on one network the names differ. Ask the user what the hostname field says, or find the IP in the router. |
 | Sensor not on the map after Step 4 | Wait a few minutes (real-time data goes out every ~30 s, map registration can take longer); verify coordinates are filled in «GPS & Sensors» and saved; verify the device has internet access. |
 | Map data lags or has gaps | Datalogs are batched every ~10 minutes — short gaps are normal; check Wi-Fi signal strength in the device interface. |
 | No readings from some sensor | Check the model: Altruist Urban has PM + noise but no CO2; Altruist Insight has CO2 but no PM or noise. |
@@ -346,6 +484,8 @@ not documented here, so refer the user to support if they ask for specifics.
 | Unclear LED pattern not in the table | Do not guess what it means; ask support. |
 | Wants to change Wi-Fi network (moved / new router) | Use the Wi-Fi reset (Section 11) and redo setup from Step 2 — device identity and map history survive. |
 | Forgot the web UI password | The Wi-Fi reset also clears it (Section 11). |
+| Flashing: port is listed but `Failed to execute 'open' on 'SerialPort'` | Linux permissions or ModemManager — see Section 11, manual flashing. |
+| Device is online but `altruist.local` does not resolve | Its Local Hostname is something else — `altruist-urban-<id>` / `altruist-insight-<id>` or whatever the owner set (Configuration → Wi-Fi). Verified on 2026-08-11: `altruist-urban-0b50.local` resolved while `altruist.local` timed out on the same network. |
 | Anything unresolved | Hand over to support — see Section 16. |
 
 ## 14. Answering questions later
@@ -486,6 +626,8 @@ https://sensors.social/support/
 - Where to buy: https://sensors.social/where-to-buy/
 - Support: https://support.cyberpunks.shop
 - Robonomics wiki (Home Assistant, Web3): https://wiki.robonomics.network/docs/altruist/
+- Webflasher (manual firmware flashing over USB-C, desktop Chrome/Edge only):
+  https://webflasher.robonomics.network/
 - Source code: firmware https://github.com/airalab/altruist-firmware , map
   https://github.com/airalab/sensors.social , hardware (KiCad, 3D, BOM)
   https://github.com/airalab/hardware
@@ -569,13 +711,34 @@ authoritative — if anything here disagrees with it, follow the prose.
   "insight_buttons": {"UP": "prev screen", "DOWN": "next screen", "SET_long": "sleep"},
   "led_status_urban_c6": {"green": "ok", "blue": "setup mode or transmitting", "red_flash_3s": "last send failed", "red_steady": "offline/unhealthy >10min"},
   "firmware_update": "OTA automatic on stable channel; manual via browser webflasher (Web Serial API)",
+  "webflasher": {
+    "url": "https://webflasher.robonomics.network/",
+    "title": "Robonomics ESP Installer",
+    "requires": "desktop Chrome or Edge (Web Serial API); not possible from a phone; USB-C data cable",
+    "firmware_options": ["Urban Stable", "Urban Testing", "Insight Stable", "Insight Testing"],
+    "language": "EN/RU switch selects the firmware language too",
+    "chips": {"urban": ["ESP32-C6", "ESP32-C3"], "insight": ["ESP32-C6"]},
+    "channels": "OTA is pinned to Stable; Testing devices are not pulled back automatically; return via flashing Stable or manual /ota",
+    "versions_seen_2026-08-11": {"stable": ["R-URB_2026-06.1", "R-INS_2026-06.1"], "testing": ["R-URB_2026-07-08", "R-INS_2026-07-08"]},
+    "erase_checkbox": "leave unchecked; ticking it wipes config and Robonomics identity (= factory reset)",
+    "preserves_when_not_erasing": "verified 2026-08-11 on Urban C6 via boot log: config, saved Wi-Fi credentials and Robonomics address all survive",
+    "linux_port_errors": "Failed to execute 'open' on 'SerialPort' => user not in dialout group, or ModemManager holding /dev/ttyACM0"
+  },
+  "testing_channel_2026-08-11": {
+    "warning": "Stable is what the rest of this file describes; on Testing believe the user's screen over this file",
+    "ui": "app-like UI with four areas: altruist.local (readings/settings), sensors.social (map), Custom (HA/API/Influx/CSV), System (debug/restart/backup/delete config); captive portal split into steps 1-2 + Finish setup",
+    "backup": "System -> Backup & restore; includes owner key; restore replaces config and reboots; same file logs in on the map; /guest-restore available on the device's guest Wi-Fi",
+    "encryption": "values encrypted to owner/rws_owner pubkey; standalone or master = self-owner, group member = master's address; decrypt on the map via owner mnemonic or owner-access JSON / device backup",
+    "encryption_trap": "with a manual/external owner the device backup does NOT decrypt measurements — the external owner's key is required; the backup still restores settings",
+    "mdns": "per-device name altruist-urban-<id> / altruist-insight-<id>, editable as Local Hostname in Configuration -> Wi-Fi; altruist.local resolves only if no other Altruist holds it"
+  },
   "operating_temp_c": [-10, 35],
   "integrations": ["home_assistant >=2025.7", "sensors.community", "mqtt", "microSD"],
-  "not_documented_here": ["insight LED colour scale", "legacy C3 indication", "reset button location on Urban", "webflasher URL and USB flashing mode", "insight e-ink screen list", "sensor lifetime, cleaning, SCD41 calibration, spare parts", "RadSens in retail bundles", "dimensions, weight, warranty, WEEE", "local HTTP API endpoints", "RWS subscription cost / XRT amounts / running your own provider"],
+  "not_documented_here": ["insight LED colour scale", "legacy C3 indication", "reset button location on Urban", "how to force USB flashing mode when the browser cannot see the device", "insight e-ink screen list", "sensor lifetime, cleaning, SCD41 calibration, spare parts", "RadSens in retail bundles", "dimensions, weight, warranty, WEEE", "local HTTP API endpoints", "RWS subscription cost / XRT amounts / running your own provider"],
   "public_map": "https://sensors.social",
   "docs": "https://sensors.social/altruist-setup/",
   "support": "https://support.cyberpunks.shop",
-  "guide_version": "1.6",
+  "guide_version": "1.7",
   "guide_updated": "2026-08-11"
 }
 ```
