@@ -43,5 +43,9 @@ reply in the user's language and to never invent facts beyond the file.
 
 ## License
 
-Open knowledge for the community. See individual device docs for upstream
-sources (Robonomics wiki, Home Assistant docs, etc.).
+[CC BY 4.0](LICENSE) © 2026 Sergei Lonshakov
+
+Open knowledge for the community: copy, translate, adapt and republish these
+guides — including commercially — as long as you credit the source and say what
+you changed. See individual device docs for upstream sources (Robonomics wiki,
+Home Assistant docs, etc.).
